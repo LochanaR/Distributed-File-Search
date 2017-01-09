@@ -1,7 +1,8 @@
-import javax.xml.crypto.Data;
+import Message.AbstractMessage;
+import Message.MessageDecoder;
+
 import java.io.IOException;
 import java.net.*;
-import java.util.StringTokenizer;
 
 /**
  * Created by Chamil Prabodha on 03/01/2017.
@@ -12,6 +13,7 @@ public class DSConnection {
     private InetAddress ipaddress = null;
     private String ip = null;
     private int port = 8081;
+    private MessageListener listener = null;
 
     private DatagramSocket sock = null;
 
@@ -19,10 +21,11 @@ public class DSConnection {
 
     }
 
-    public static void init(String ip, int port){
+    public static void init(String ip, int port,MessageListener listener){
         DSConnection conn = getConnection();
         conn.ip = ip;
         conn.port = port;
+        conn.listener = listener;
         try {
             conn.ipaddress = InetAddress.getByName(conn.ip);
         } catch (UnknownHostException e) {
@@ -152,7 +155,10 @@ public class DSConnection {
                         try {
                             getSock().receive(packet);
                             String receivedata = new String(packet.getData(),0,packet.getLength());
-                            System.out.println(receivedata);
+
+                            AbstractMessage response = MessageDecoder.decodeMessage(receivedata);
+                            getListener().messageReceived(response);
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -181,6 +187,10 @@ public class DSConnection {
         return this.sock;
     }
 
+    private MessageListener getListener(){
+        return this.listener;
+    }
+
     public String getRawIp(){
         return this.ip;
     }
@@ -191,6 +201,10 @@ public class DSConnection {
 
     public InetAddress getIpaddress(){
         return this.ipaddress;
+    }
+
+    public void addListener(MessageListener listener){
+        this.listener = listener;
     }
 
 

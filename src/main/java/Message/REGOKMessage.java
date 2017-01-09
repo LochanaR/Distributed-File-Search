@@ -7,14 +7,17 @@ import Util.Neighbour;
 /**
  * Created by Chamil Prabodha on 08/01/2017.
  */
-public class REGResponse extends AbstractResponse {
+public class REGOKMessage extends AbstractMessage {
 
     private int length = 0;
     private MessageType type = null;
     private int no_nodes = 0;
     private List<Neighbour> neighbours = null;
 
-    public REGResponse(int length,MessageType type,int no_nodes){
+    public REGOKMessage(int length, MessageType type, int no_nodes){
+        this.length = length;
+        this.type = type;
+        this.no_nodes = no_nodes;
         neighbours = new ArrayList<Neighbour>();
     }
 

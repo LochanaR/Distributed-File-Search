@@ -1,17 +1,13 @@
-import Message.AbstractResponse;
-import Message.MessageDecoder;
-import Message.MessageType;
-import Message.REGResponse;
+import Message.*;
 import Util.Neighbour;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by Chamil Prabodha on 03/01/2017.
  */
-public class Node {
+public class Node implements MessageListener{
 
     private List<Neighbour> neighbours = null;
 
@@ -22,7 +18,7 @@ public class Node {
 //    }
 
     public Node(String ip,int port){
-        DSConnection.init(ip,port);
+        DSConnection.init(ip,port,this);
         neighbours = new ArrayList<Neighbour>();
 
     }
@@ -44,12 +40,12 @@ public class Node {
 //
 //            String count = st.nextToken();
 
-            REGResponse res = (REGResponse)(MessageDecoder.decodeMessage(response));
+            AbstractMessage res = MessageDecoder.decodeMessage(response);
 
             int length = res.getLength();
             MessageType rescode = res.getType();
-            int count = res.getNo_nodes();
-//            System.out.println(Integer.parseInt(count));
+
+            int count = ((REGOKMessage)res).getNo_nodes();
 
             if (count == 9999) {
                 System.out.println("BOOTSTRAP: failed, there is some error in the command");
@@ -71,11 +67,14 @@ public class Node {
 //                    join(neighbour_ip,neighbour_port);
 //                }
 
-                neighbours = res.getNeighbours();
+                neighbours = ((REGOKMessage)res).getNeighbours();
 
                 for(int i=0;i<neighbours.size();i++){
                     Neighbour neighbour = neighbours.get(i);
                     join(neighbour.getIp(),neighbour.getPort());
+                }
+                for(Neighbour n:neighbours){
+                    System.out.println(n.getIp()+":"+n.getPort());
                 }
 
                 listen();
@@ -110,4 +109,25 @@ public class Node {
         DSConnection.getConnection().listen(ip,port);
     }
 
+    @Override
+    public void messageReceived(AbstractMessage res) {
+        int length = res.getLength();
+        MessageType type = res.getType();
+
+        switch (type){
+            case JOIN:
+                String ip = ((JOINMessage)res).getIp();
+                int port = ((JOINMessage)res).getPort();
+
+                System.out.println("JOIN received from "+ip+":"+port);
+                Neighbour neighbour = new Neighbour(ip,port);
+                neighbours.add(neighbour);
+                for(Neighbour n:neighbours){
+                    System.out.println(n.getIp()+":"+n.getPort());
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }
