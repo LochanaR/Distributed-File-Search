@@ -21,16 +21,20 @@ public class DSConnection {
 
     }
 
-    public static void init(String ip, int port,MessageListener listener){
+    public static void init(MessageListener listener){
         DSConnection conn = getConnection();
-        conn.ip = ip;
-        conn.port = port;
+        conn.port = PortGenerator.generatePort();
         conn.listener = listener;
         try {
-            conn.ipaddress = InetAddress.getByName(conn.ip);
+            conn.ipaddress = InetAddress.getLocalHost();
+            conn.ip = conn.ipaddress.getHostAddress();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        System.out.println("==========Node Details==========");
+        System.out.println("Node IP: " + conn.ip);
+        System.out.println("Node is listening at port: " + conn.port);
+        System.out.println("================================");
     }
 
     public static DSConnection getConnection(){
@@ -40,15 +44,10 @@ public class DSConnection {
         return instance;
     }
 
-    public String connectToBootstrap(String command, int port){
+    public String connectToBootstrap(String command){
 
         try {
-//            this.ipaddress = InetAddress.getByName("localhost");
             this.sock = new DatagramSocket(this.port);
-//            this.port = port;
-//            this.ip = "127.0.0.1";
-
-//            String command = "UNREG 127.0.0.1 8084 node4";
             command = String.format("%04d",command.length()+5)+" "+command;
 
             byte[] sendBytes = command.getBytes();

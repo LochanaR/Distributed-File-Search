@@ -17,8 +17,8 @@ public class Node implements MessageListener{
 //            System.out.println("Node Successfully Registered");
 //    }
 
-    public Node(String ip,int port){
-        DSConnection.init(ip,port,this);
+    public Node(){
+        DSConnection.init(this);
         neighbours = new ArrayList<Neighbour>();
 
     }
@@ -30,7 +30,7 @@ public class Node implements MessageListener{
 
         String command = "REG "+ip+" "+port+" "+username;
 
-        String response = DSConnection.getConnection().connectToBootstrap(command,port);
+        String response = DSConnection.getConnection().connectToBootstrap(command);
 
         if(response !=null) {
 //            StringTokenizer st = new StringTokenizer(response, " ");
@@ -92,7 +92,7 @@ public class Node implements MessageListener{
         int port = DSConnection.getConnection().getPort();
 
         String command = "UNREG "+ip+" "+port+" "+username;
-        DSConnection.getConnection().connectToBootstrap(command,port);
+        DSConnection.getConnection().connectToBootstrap(command);
         return false;
     }
 
